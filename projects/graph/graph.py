@@ -113,24 +113,18 @@ class Graph:
         starting_vertex to destination_vertex in
         breath-first order.
         """
-        visited = []
-
+        visited = set()
         q = Queue()
-
         first_path = [starting_vertex]
-
         q.enqueue(first_path)
-
         if starting_vertex in self.vertices and starting_vertex == destination_vertex:
-            visited.append(starting_vertex)
-            return visited
-
+            return first_path
         else: 
-            while q.size() > 0:
+            while q:
                 path = q.dequeue()
-                node = path[-1]
-                if node not in visited:
-                    neighbors = self.get_neighbors(node)
+                current_node = path[-1]
+                if current_node not in visited:
+                    neighbors = self.get_neighbors(current_node)
                     for neighbor in neighbors:
                         # get old path and store it in new_path
                         new_path = list(path)
@@ -142,8 +136,8 @@ class Graph:
                         # return the new_path created in this cycle
                         if neighbor == destination_vertex:
                             return new_path
-                    # add node into visited list
-                    visited.append(node)
+                    # add current_node into visited list
+                    visited.add(current_node)
 
     def dfs(self, starting_vertex, destination_vertex):
         """
@@ -151,7 +145,27 @@ class Graph:
         starting_vertex to destination_vertex in
         depth-first order.
         """
-        pass  # TODO
+
+        visited = set()
+        s = Stack()
+        first_path = [starting_vertex]
+        s.push(first_path)
+        if starting_vertex in self.vertices and starting_vertex == destination_vertex:
+            return first_path
+        else:
+            while s:
+                path = s.pop()
+                current_node = path[-1]
+                if current_node not in visited:
+                    neighbors = self.get_neighbors(current_node)
+                    for neighbor in neighbors:
+                        new_path = list(path)
+                        new_path.append(neighbor)
+                        s.push(new_path)
+                        if neighbor == destination_vertex:
+                            return new_path
+                    visited.add(current_node)
+
 
     def dfs_recursive(self, starting_vertex, destination_vertex):
         """
@@ -221,12 +235,12 @@ if __name__ == '__main__':
 #     Valid BFS path:
 #         [1, 2, 4, 6]
 #     '''
-    print(graph.bfs(1, 6))
+    # print(graph.bfs(1, 6))
 
 #     '''
 #     Valid DFS paths:
 #         [1, 2, 4, 6]
 #         [1, 2, 4, 7, 6]
 #     '''
-#     print(graph.dfs(1, 6))
+    print(graph.dfs(1, 6))
 #     print(graph.dfs_recursive(1, 6))
