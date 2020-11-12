@@ -37,14 +37,52 @@ class Graph:
         Print each vertex in breadth-first order
         beginning from starting_vertex.
         """
-        pass  # TODO
+        q = Queue()
+
+        visited = set()
+
+        q.enqueue(starting_vertex)
+
+        while q.size() > 0:
+            current_node = q.dequeue()
+
+            if current_node in visited:
+                pass
+            else:
+                print(current_node)
+                visited.add(current_node)
+                neighbors = self.get_neighbors(current_node)
+
+                for i in neighbors:
+                    q.enqueue(i)
+
 
     def dft(self, starting_vertex):
         """
         Print each vertex in depth-first order
         beginning from starting_vertex.
         """
-        pass  # TODO
+        s = Stack()
+
+        visited = set()
+
+        s.push(starting_vertex)
+
+        while s.size() > 0:
+            current_node = s.pop()
+
+            if current_node in visited:
+                pass
+            else:
+                print(current_node)
+                visited.add(current_node)
+                neighbors = self.get_neighbors(current_node)
+
+                for i in neighbors:
+                    s.push(i)
+
+        
+
 
     def dft_recursive(self, starting_vertex):
         """
@@ -107,8 +145,7 @@ if __name__ == '__main__':
 #         {1: {2}, 2: {3, 4}, 3: {5}, 4: {6, 7}, 5: {3}, 6: {3}, 7: {1, 6}}
 #     '''
     print(graph.vertices)
-    graph.add_edge('0', '4')
-
+    
 #     '''
 #     Valid BFT paths:
 #         1, 2, 3, 4, 5, 6, 7
@@ -124,7 +161,7 @@ if __name__ == '__main__':
 #         1, 2, 4, 3, 7, 6, 5
 #         1, 2, 4, 3, 7, 5, 6
 #     '''
-#     graph.bft(1)
+    graph.bft(1)
 
 #     '''
 #     Valid DFT paths:
@@ -133,7 +170,7 @@ if __name__ == '__main__':
 #         1, 2, 4, 7, 6, 3, 5
 #         1, 2, 4, 6, 3, 5, 7
 #     '''
-#     graph.dft(1)
+    graph.dft(1)
 #     graph.dft_recursive(1)
 
 #     '''
