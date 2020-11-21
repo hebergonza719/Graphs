@@ -58,9 +58,9 @@ traversal_path = []
 visited_dict = {}
 
 # gets random unvisited exit
-def get_random_exit(rooom_id):
+def get_random_exit(room_visited_dict):
     unvisited_exits = []
-    for k, v in rooom_id.items():
+    for k, v in room_visited_dict.items():
         if v == '?':
             unvisited_exits.append(k)
 
@@ -71,8 +71,7 @@ def get_random_exit(rooom_id):
     if len(unvisited_exits) > 0:
         return unvisited_exits[0]
     else: 
-        return unvisited_exits
-
+        return None
 
 
 def traverse_all_rooms():
@@ -91,61 +90,105 @@ def traverse_all_rooms():
 
     s.push(player.current_room.id)
 
-    previous_room = 0
 
-    previous_move = ''
+    # start from here loop
+    while len(visited_dict) < 9:
 
-    while s.size() >= 1:
-        # initialize room item in dictionary
-        current_room = s.pop()
-        if current_room not in visited_dict:
-            current_room_exits = player.current_room.get_exits()
-            visited_dict[current_room] = {}
-            for exit in current_room_exits:
-                visited_dict[current_room][exit] = '?'
+        previous_room = 0
 
-        if previous_move == 'n':
-            visited_dict[current_room]['s'] = previous_room
-        if previous_move == 's':
-            visited_dict[current_room]['n'] = previous_room
-        if previous_move == 'e':
-            visited_dict[current_room]['w'] = previous_room
-        if previous_move == 'w':
-            visited_dict[current_room]['e'] = previous_room
+        previous_move = ''
+
+        while s.size() >= 1:
+            # initialize room item in dictionary
+            current_room = s.pop()
+            if current_room not in visited_dict:
+                current_room_exits = player.current_room.get_exits()
+                visited_dict[current_room] = {}
+                for exit in current_room_exits:
+                    visited_dict[current_room][exit] = '?'
+
+            if previous_move == 'n':
+                visited_dict[current_room]['s'] = previous_room
+            if previous_move == 's':
+                visited_dict[current_room]['n'] = previous_room
+            if previous_move == 'e':
+                visited_dict[current_room]['w'] = previous_room
+            if previous_move == 'w':
+                visited_dict[current_room]['e'] = previous_room
 
 
-        # get random unvisited exit
-        random_exit = get_random_exit(visited_dict[current_room])
+            # get random unvisited exit
+            random_exit = get_random_exit(visited_dict[current_room])
 
-        if len(random_exit) < 1:
-            break
+            if random_exit is None:
+                break
 
-        # add new move to path[]
-        traversal_path.append(random_exit)
+            # add new move to path[]
+            traversal_path.append(random_exit)
 
-        # save current room to be used as previous
-        previous_room = current_room
+            # save current room to be used as previous
+            previous_room = current_room
 
-        # save random_exit to be used as pervious_move
-        previous_move = random_exit
+            # save random_exit to be used as pervious_move
+            previous_move = random_exit
 
-        # move character to new random room
-        player.travel(random_exit)
+            # move character to new random room
+            player.travel(random_exit)
 
-        # adds discovered room to previous room's graph
-        visited_dict[previous_room][random_exit] = player.current_room.id
+            # adds discovered room to previous room's graph
+            visited_dict[previous_room][random_exit] = player.current_room.id
+
+            # adds new room to the stack
+            s.push(player.current_room.id)
+
+        # starts bfs to find 
+        q.enqueue(player.current_room.id)
+
+        current_path = []
+
+        cycle = 1
+        
+        while q.size() >= 1:
+            # make a copy of traversal_path for access to previous move
+            if cycle == 1:
+                current_path = traversal_path.copy()
+
+            current_room = q.dequeue()
+
+            # check if this room has available rooms to explore
+            if '?' in visited_dict[current_room].values():
+                print('stop here')
+                break
+
+            # set next move by checking previous move from traversal_path
+            print(current_path)
+            print(cycle)
+            if len(current_path) < cycle:
+                return traversal_path
+            if current_path[- cycle] == 'n':
+                player.travel('s')
+                traversal_path.append('s')
+            elif current_path[- cycle] == 's':
+                player.travel('n')
+                traversal_path.append('n')
+            elif current_path[- cycle] == 'e':
+                player.travel('w')
+                traversal_path.append('w')
+            elif current_path[- cycle] == 'w':
+                player.travel('e')
+                traversal_path.append('e')
+
+            cycle += 1
+
+            q.enqueue(player.current_room.id)
 
         s.push(player.current_room.id)
-        
-    while q.size() >= 1:
-        pass
     
-    print(player.current_room.id)
     print(visited_dict)
     print(traversal_path)
 
 
-traverse_all_rooms()
+print(traverse_all_rooms())
 
 # TRAVERSAL TEST
 # visited_rooms = set()
