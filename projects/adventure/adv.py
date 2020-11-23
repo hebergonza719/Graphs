@@ -37,10 +37,10 @@ world = World()
 
 # You may uncomment the smaller graphs for development and testing purposes.
 # map_file = "maps/test_line.txt"
-map_file = "maps/test_cross.txt"
+# map_file = "maps/test_cross.txt"
 # map_file = "maps/test_loop.txt"
 # map_file = "maps/test_loop_fork.txt"
-# map_file = "maps/main_maze.txt"
+map_file = "maps/main_maze.txt"
 
 # Loads the map into a dictionary
 room_graph=literal_eval(open(map_file, "r").read())
@@ -73,17 +73,12 @@ def get_random_exit(room_visited_dict):
     else: 
         return None
 
+def convert_to_coor(dictionary, next_room):
+    for k, v in dictionary.items():
+        if v == next_room:
+            return k
 
 def traverse_all_rooms():
-    ## return current room id
-    # print(player.current_room.id)
-
-    ## returns number of available exits
-    # print(player.current_room.get_exits()) 
-
-    ## moves player to new room
-    # player.travel('n') 
-
     s = Stack()
 
     q = Queue()
@@ -92,7 +87,7 @@ def traverse_all_rooms():
 
 
     # start from here loop
-    while len(visited_dict) < 9:
+    while len(visited_dict) < 500:
 
         previous_room = 0
 
@@ -109,17 +104,16 @@ def traverse_all_rooms():
 
             if previous_move == 'n':
                 visited_dict[current_room]['s'] = previous_room
-            if previous_move == 's':
+            elif previous_move == 's':
                 visited_dict[current_room]['n'] = previous_room
-            if previous_move == 'e':
+            elif previous_move == 'e':
                 visited_dict[current_room]['w'] = previous_room
-            if previous_move == 'w':
+            elif previous_move == 'w':
                 visited_dict[current_room]['e'] = previous_room
 
 
             # get random unvisited exit
             random_exit = get_random_exit(visited_dict[current_room])
-
             if random_exit is None:
                 break
 
@@ -141,69 +135,55 @@ def traverse_all_rooms():
             # adds new room to the stack
             s.push(player.current_room.id)
 
-        # starts bfs to find 
-        q.enqueue(player.current_room.id)
+        q.enqueue([player.current_room.id])
 
-        current_path = []
+        visited = {}
 
-        cycle = 1
-        
-        while q.size() >= 1:
-            # make a copy of traversal_path for access to previous move
-            if cycle == 1:
-                current_path = traversal_path.copy()
+        while q.size() > 0:
+            # current_room = q.dequeue()
+            current_path = q.dequeue()
+            current_room = current_path[-1]
+                        
+            if current_room not in visited:
+                visited[current_room] = current_path
 
-            current_room = q.dequeue()
+                if '?' in visited_dict[current_room].values():
+                    coor_path = []
+                    for i in range(len(visited[current_room]) - 1):
+                        coor = convert_to_coor(visited_dict[visited[current_room][i]], visited[current_room][i + 1])
+                        coor_path.append(coor)
+                    for coor in coor_path:
+                        player.travel(coor)
+                    for coor in coor_path:
+                        traversal_path.append(coor)
+                    break
 
-            # check if this room has available rooms to explore
-            if '?' in visited_dict[current_room].values():
-                print('stop here')
-                break
+                neighbors = list(visited_dict[current_room].values())
 
-            # set next move by checking previous move from traversal_path
-            print(current_path)
-            print(cycle)
-            if len(current_path) < cycle:
-                return traversal_path
-            if current_path[- cycle] == 'n':
-                player.travel('s')
-                traversal_path.append('s')
-            elif current_path[- cycle] == 's':
-                player.travel('n')
-                traversal_path.append('n')
-            elif current_path[- cycle] == 'e':
-                player.travel('w')
-                traversal_path.append('w')
-            elif current_path[- cycle] == 'w':
-                player.travel('e')
-                traversal_path.append('e')
-
-            cycle += 1
-
-            q.enqueue(player.current_room.id)
-
-        s.push(player.current_room.id)
+                for neighbor in neighbors:
+                    neighbor_path = list(current_path)
+                    neighbor_path.append(neighbor)
+                    q.enqueue(neighbor_path)
+            
+        q.queue = []
+        s.push(player.current_room.id)        
     
-    print(visited_dict)
-    print(traversal_path)
-
-
-print(traverse_all_rooms())
+traverse_all_rooms()
 
 # TRAVERSAL TEST
-# visited_rooms = set()
-# player.current_room = world.starting_room
-# visited_rooms.add(player.current_room)
+visited_rooms = set()
+player.current_room = world.starting_room
+visited_rooms.add(player.current_room)
 
-# for move in traversal_path:
-#     player.travel(move)
-#     visited_rooms.add(player.current_room)
+for move in traversal_path:
+    player.travel(move)
+    visited_rooms.add(player.current_room)
 
-# if len(visited_rooms) == len(room_graph):
-#     print(f"TESTS PASSED: {len(traversal_path)} moves, {len(visited_rooms)} rooms visited")
-# else:
-#     print("TESTS FAILED: INCOMPLETE TRAVERSAL")
-#     print(f"{len(room_graph) - len(visited_rooms)} unvisited rooms")
+if len(visited_rooms) == len(room_graph):
+    print(f"TESTS PASSED: {len(traversal_path)} moves, {len(visited_rooms)} rooms visited")
+else:
+    print("TESTS FAILED: INCOMPLETE TRAVERSAL")
+    print(f"{len(room_graph) - len(visited_rooms)} unvisited rooms")
 
 
 
